@@ -1,0 +1,123 @@
+"""
+IRC chat server implementing Tasks 2.1-2.5.
+
+python3 myserver.py localhost 8090
+"""
+
+import sys
+from ex2utils import Server
+
+
+class IRCServer(Server):
+
+    # Task 2.1 & 2.2 - initialise server-wide state on startup
+    def onStart(self):
+        self.clients = {}       # maps username -> socket for registered users kinda like a hashmap/dictionary
+        self.client_count = 0
+        self.printOutput("Server started")
+
+    # Task 2.1 & 2.2 - fires when a new TCP connection arrives
+    def onConnect(self, socket):
+        socket.username = None
+        self.client_count += 1
+        self.printOutput("new client connected")
+        self.printOutput(f"{self.client_count} active clients")
+
+    # Task 2.1 & 2.2 - fires when a connection drops for any reason
+    def onDisconnect(self, socket):
+        if socket.username and socket.username in self.clients:
+            del self.clients[socket.username]
+        self.client_count -= 1
+        self.printOutput("a client disconnected")
+        self.printOutput(f"{self.client_count} active clients")
+
+    # Task 2.3, 2.5 - parse command and dispatch to the right handler
+    def onMessage(self, socket, message):
+        self.printOutput(message)
+
+        # split into command and everything after it
+        parts = message.split(" ", 1)
+        command = parts[0].upper()
+        params = parts[1].strip() if len(parts) > 1 else ""
+
+        # Task 2.5 - HELLO: register a screen name
+        if command == "HELLO":
+            return self._handle_hello(socket, params)
+
+        # every command below this point needs a registered user
+        if not socket.username:
+            socket.send(b"not registered")
+            return True
+
+        # Task 2.5 - SEND: broadcast to every connected user
+        if command == "SEND":
+            return self._handle_send(socket, params)
+
+        # Task 2.5 - SEND_TO: private message to one user
+        if command == "SEND_TO":
+            return self._handle_send_to(socket, params)
+
+        # Task 2.5 - LIST: return names of everyone online
+        if command == "LIST":
+            return self._handle_list(socket)
+
+        # Task 2.6 - QUIT: acknowledge then close this connection
+        if command == "QUIT":
+            socket.send(b"Client exiting")
+            return False
+
+        # Task 2.5 - anything else is unknown
+        socket.send(b"unknown command")
+        return True
+
+
+    def _handle_hello(self, socket, username):
+        """Register the given username, rejecting duplicates."""
+        if not username:
+            socket.send(b"unknown command")
+            return True
+        if username in self.clients:
+            socket.send(b"username taken")
+            return True
+        socket.username = username
+        self.clients[username] = socket
+        self.printOutput(f"{username} registered")
+        socket.send(f"welcome {username}".encode())
+        return True
+
+    def _handle_send(self, socket, message):
+        """Broadcast a message from this user to everyone."""
+        if not message:
+            socket.send(b"unknown command")
+            return True
+        formatted = f"message from {socket.username}: {message}"
+        for client in self.clients.values():
+            client.send(formatted.encode())
+        return True
+
+    def _handle_send_to(self, socket, params):
+        """Send a private message to a single named user."""
+        parts = params.split(" ", 1)
+        if len(parts) < 2:
+            socket.send(b"unknown command")
+            return True
+        target, msg_text = parts[0], parts[1]
+        if target not in self.clients:
+            socket.send(b"user not found")
+            return True
+        formatted = f"message from {socket.username}: {msg_text}"
+        self.clients[target].send(formatted.encode())
+        return True
+
+    def _handle_list(self, socket):
+        """Reply with a comma-separated list of online usernames."""
+        user_list = ", ".join(self.clients.keys()) if self.clients else "no users online"
+        socket.send(f"online users: {user_list}".encode())
+        return True
+
+
+ip = sys.argv[1]
+port = int(sys.argv[2])
+
+server = IRCServer()
+server.start(ip, port)
