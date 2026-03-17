@@ -31,6 +31,8 @@ class IRCServer(Server):
 
     # parse command and dispatch to the right handler
     def onMessage(self, socket, message):
+        message = message.strip('\r')
+
         self.printOutput(message)
 
         # split into command and everything after it
@@ -86,7 +88,7 @@ class IRCServer(Server):
     def _handle_send(self, socket, message):
         """Broadcast a message from this user to everyone."""
         if not message:
-            socket.send(b"unknown command")
+            socket.send(b"empty message - format should be SEND <msg>")
             return True
         formatted = f"message from {socket.username}: {message}"
         for client in self.clients.values():
@@ -96,9 +98,9 @@ class IRCServer(Server):
     def _handle_send_to(self, socket, params):
         """Send a private message to a single named user."""
         parts = params.split(" ", 1)
-        
+        # need both a target name and a non-empty message body
         if len(parts) < 2 or not parts[1].strip():
-            socket.send(b"unknown command")
+            socket.send(b"empty message or no user listed - format should be SEND_TO <user> <msg>")
             return True
         target = parts[0]
         msg_text = parts[1].strip()
