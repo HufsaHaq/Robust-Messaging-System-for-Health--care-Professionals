@@ -1,7 +1,7 @@
 {
     "register": {
         "description": "Register a new user",
-        "command": "HELLO %user%"
+        "command": "REGISTER %user%"
     },
     "send_all": {
         "description": "Send message to all the users",
