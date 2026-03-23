@@ -13,7 +13,7 @@
 
 
   - Commands are case-insensitive: SEND, send, Send all work.
-  - Usernames are case-insensitive: Alice and alice are the same user.
+  - Usernames are case-insensitive: Akram and akram are the same user.
   - Usernames cannot contain spaces.
   - Broadcasts (SEND) only go to registered users.
   - Each connection may only register one username.
@@ -23,10 +23,10 @@ Open three terminals.
 Terminal 1 - server:
     python3 myserver.py localhost 8090
 
-Terminal 2 - client Alice:
+Terminal 2 - client Akram:
     python3 myclient.py localhost 8090
-    > Enter your screen name: Alice
-    Server prints "alice registered" and "1 active clients".
+    > Enter your screen name: Akram
+    Server prints "akram registered" and "1 active clients".
 
 Terminal 3 - client Bob:
     python3 myclient.py localhost 8090
@@ -38,34 +38,34 @@ Test blank username:
     Client prints "Screen name cannot be blank." and asks again immediately.
 
 Test duplicate name:
-    Start a third client and enter "Alice" when prompted.
+    Start a third client and enter "Akram" when prompted.
     Client prints "Username already taken, try another." and asks again.
-    Note: entering "ALICE" or "alice" also counts as a duplicate.
+    Note: entering "AKRAM" or "akram" also counts as a duplicate.
 
 Test broadcast  ->  SEND:
-    In Alice's terminal:
+    In Akram's terminal:
         SEND hello everyone
-    Both Alice and Bob see:  message from alice: hello everyone
+    Both Akram and Bob see:  message from akram: hello everyone
 
 Test private message  ->  SEND_TO:
-    In Alice's terminal:
+    In Akram's terminal:
         SEND_TO Bob hi there
-    Only Bob sees:  message from alice: hi there
+    Only Bob sees:  message from akram: hi there
     Note: SEND_TO BOB hi there also works (target name is case-insensitive).
 
 Test user list  ->  LIST:
-    In Alice's terminal:
+    In Akram's terminal:
         LIST
-    Alice sees:  online users: alice, bob
+    Akram sees:  online users: akram, bob
 
 Test unknown command:
-    In Alice's terminal type any unrecognised word, e.g. BADCMD.
-    Alice sees:  unknown command
+    In Akram's terminal type any unrecognised word, e.g. BADCMD.
+    Akram sees:  unknown command
 
 Test clean disconnect  ->  QUIT:
-    In Alice's terminal:
+    In Akram's terminal:
         QUIT
-    Alice sees "Client exiting" and exits cleanly.
+    Akram sees "Client exiting" and exits cleanly.
     Server prints "a client disconnected" and "1 active clients".
     Bob's next LIST shows only bob.
 
@@ -76,10 +76,10 @@ commands work identically to the Python client.
 
     telnet localhost 8090
 
-    REGISTER Alice          -> welcome alice
-    LIST                    -> online users: alice
-    SEND hello everyone     -> message from alice: hello everyone
-    SEND_TO alice hi        -> message from alice: hi
+    REGISTER Akram          -> welcome akram
+    LIST                    -> online users: akram
+    SEND hello everyone     -> message from akram: hello everyone
+    SEND_TO akram hi        -> message from akram: hi
     QUIT                    -> Client exiting  (connection closes)
 
 Test unregistered behaviour via telnet:
@@ -90,7 +90,7 @@ Test unregistered behaviour via telnet:
 
 Test invalid commands via telnet:
     REGISTER                -> unknown command  (no name given)
-    REGISTER Alice Bob      -> unknown command  (spaces in name not allowed)
+    REGISTER Akram Bob      -> unknown command  (spaces in name not allowed)
     SEND                    -> unknown command  (no message given)
     BADCMD                  -> not registered  (or unknown command if registered)
 

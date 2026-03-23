@@ -96,13 +96,14 @@ class IRCServer(Server):
         socket.username = username
         self.clients[username] = socket
         self.printOutput(f"{username} registered")
+        self.printOutput(f"{self.client_count} active clients")
         socket.send(f"welcome {username}".encode())
         return True
 
     def _handle_send(self, socket, message):
         """Broadcast a message from this user to everyone."""
         if not message:
-            socket.send(b"unknown command")
+            socket.send(b"empty message - format should be SEND <msg>")
             return True
         formatted = f"message from {socket.username}: {message}"
         # collect dead sockets during broadcast rather than crashing mid-loop
@@ -122,7 +123,7 @@ class IRCServer(Server):
         parts = params.split(" ", 1)
         # need both a target name and a non-empty message body
         if len(parts) < 2 or not parts[1].strip():
-            socket.send(b"unknown command")
+            socket.send(b"empty message or no user listed - format should be SEND_TO <user> <msg>")
             return True
         # normalise target to lowercase to match how names are stored
         target = parts[0].lower()
