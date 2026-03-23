@@ -28,10 +28,10 @@ Terminal 2 - client Akram:
     > Enter your screen name: Akram
     Server prints "akram registered" and "1 active clients".
 
-Terminal 3 - client Bob:
+Terminal 3 - client Jefferson:
     python3 myclient.py localhost 8090
-    > Enter your screen name: Bob
-    Server prints "bob registered" and "2 active clients".
+    > Enter your screen name: Jefferson
+    Server prints "Jefferson registered" and "2 active clients".
 
 Test blank username:
     When prompted for a screen name just press Enter.
@@ -45,18 +45,18 @@ Test duplicate name:
 Test broadcast  ->  SEND:
     In Akram's terminal:
         SEND hello everyone
-    Both Akram and Bob see:  message from akram: hello everyone
+    Both Akram and Jefferson see:  message from akram: hello everyone
 
 Test private message  ->  SEND_TO:
     In Akram's terminal:
-        SEND_TO Bob hi there
-    Only Bob sees:  message from akram: hi there
+        SEND_TO Jefferson hi there
+    Only Jefferson sees:  message from akram: hi there
     Note: SEND_TO BOB hi there also works (target name is case-insensitive).
 
 Test user list  ->  LIST:
     In Akram's terminal:
         LIST
-    Akram sees:  online users: akram, bob
+    Akram sees:  online users: Akram, Jefferson
 
 Test unknown command:
     In Akram's terminal type any unrecognised word, e.g. BADCMD.
@@ -67,7 +67,7 @@ Test clean disconnect  ->  QUIT:
         QUIT
     Akram sees "Client exiting" and exits cleanly.
     Server prints "a client disconnected" and "1 active clients".
-    Bob's next LIST shows only bob.
+    Jefferson's next LIST shows only Jefferson.
 
 TESTING WITH TELNET
 
@@ -90,8 +90,7 @@ Test unregistered behaviour via telnet:
 
 Test invalid commands via telnet:
     REGISTER                -> unknown command  (no name given)
-    REGISTER Akram Bob      -> unknown command  (spaces in name not allowed)
-    SEND                    -> unknown command  (no message given)
+    REGISTER Akram Jefferson      -> unknown command  (spaces in name not allowed)
     BADCMD                  -> not registered  (or unknown command if registered)
 
 ----------------
@@ -142,9 +141,7 @@ class IRCClient(Client):
 
     def _try_register(self, username):
         """Send REGISTER and block until the server responds."""
-        # server lowercases all usernames, so we store lowercase here to match
-        # the "welcome {username}" reply we'll get back
-        self._pending_name = username.lower()
+        self._pending_name = username
         self.registered = False
         self._register_event.clear()
         self.send(f"REGISTER {username}".encode())
